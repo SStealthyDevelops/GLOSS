@@ -4,7 +4,6 @@ import {ArrowDown, FileText, Music} from "lucide-react";
 export default function Home() {
   return (
         <div className="min-h-screen bg-gloss-cream">
-            {/* Navigation */}
             <nav className="bg-white border-b border-gloss-offwhite py-4 px-6">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -14,7 +13,6 @@ export default function Home() {
                 </div>
             </nav>
 
-            {/* Hero Section */}
             <section className="relative bg-gradient-to-br from-gloss-navy via-gloss-blue to-gloss-accent py-24 px-6">
                 <div className="max-w-5xl mx-auto text-center">
                     <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight">
@@ -35,7 +33,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Announcement Section */}
             <section id="announcement" className="py-20 px-6 bg-white">
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-12">
@@ -53,7 +50,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Mission Section */}
             <section className="py-20 px-6 bg-gloss-offwhite">
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-12">
@@ -74,12 +70,10 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Cards Section */}
             <section className="py-20 px-6 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                        {/* Explore Card */}
                         <div className="bg-gloss-cream hover:bg-gloss-offwhite rounded-xl p-8 shadow-md hover:shadow-xl transition-all cursor-pointer group">
                             <div className="w-16 h-16 bg-gloss-navy rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                 <Music className="w-8 h-8 text-gloss-gold" />
@@ -91,8 +85,6 @@ export default function Home() {
                                 Discover the collection of sampled sounds and musical resources available through GLOSS.
                             </p>
                         </div>
-
-                        {/* Who was Percy Grainger Card */}
                         <div className="bg-gloss-cream hover:bg-gloss-offwhite rounded-xl p-8 shadow-md hover:shadow-xl transition-all cursor-pointer group">
                             <div className="w-16 h-16 bg-gloss-accent rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +99,6 @@ export default function Home() {
                             </p>
                         </div>
 
-                        {/* Making of GLOSS Card */}
                         <div className="bg-gloss-cream hover:bg-gloss-offwhite rounded-xl p-8 shadow-md hover:shadow-xl transition-all cursor-pointer group">
                             <div className="w-16 h-16 bg-gloss-sage rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +113,6 @@ export default function Home() {
                             </p>
                         </div>
 
-                        {/* Grainger as an Innovator Card */}
                         <div className="bg-gloss-cream hover:bg-gloss-offwhite rounded-xl p-8 shadow-md hover:shadow-xl transition-all cursor-pointer group">
                             <div className="w-16 h-16 bg-gloss-gold rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                 <svg className="w-8 h-8 text-gloss-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +131,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* CTA Section */}
             <section className="py-20 px-6 bg-gloss-navy">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
@@ -162,7 +151,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Footer */}
             <footer className="bg-gloss-dark text-gloss-muted py-10 px-6">
                 <div className="max-w-7xl mx-auto text-center">
                     <p className="font-body-serif">
