@@ -112,14 +112,7 @@ const HexagonSlider = ( { soundLocation }: {soundLocation: string}) => {
                         </div>
                     </div>
                 </div>
-
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-                    <div className="bg-white px-5 py-2 rounded-lg shadow-md border-2 border-gloss-gold">
-                        <span className="text-2xl font-serif font-bold text-gloss-navy">{pitchRaw}</span>
-                        <span className="text-xs font-body-serif text-gloss-slate ml-0.5">%</span>
-                    </div>
-                </div>
-
+                
             </div>
         </div>
     );
