@@ -12,7 +12,7 @@ const MusicPage = () => {
             <div className="h-full w-full flex items-center justify-center">
                 <HexagonSlider
                     soundLocation='piano/piano_01_A.mp3'
-                    imageLocation='/images/piano-icon.png'
+                    imageLocation='/images/piano-icon.jpg'
                     masterVolume={masterVolume / 100}
                 />
             </div>
