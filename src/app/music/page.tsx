@@ -2,7 +2,8 @@
 
 import HexagonSlider from "@/components/hexagon-slider";
 import { useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import {Home, Music, Volume2, VolumeX} from "lucide-react";
+import Link from "next/link";
 
 interface SoundItem {
     id: string;
@@ -42,14 +43,36 @@ const soundLibrary: SoundItem[] = [
         imageLocation: "/images/piano-icon.jpg",
         name: "Piano A"
     },
-    // Add more sounds as needed...
 ];
 
 const MusicPage = () => {
     const [masterVolume, setMasterVolume] = useState(70);
 
     return (
-        <div className='min-h-screen w-screen bg-gloss-muted relative overflow-auto'>
+        <div className='min-h-screen w-screen bg-gloss-navy relative overflow-auto'>
+            <header className="sticky top-0 z-40 w-full border-b border-gloss-gold border-opacity-20 bg-slate-900 bg-opacity-90 backdrop-blur-md shadow-lg">
+                <div className="container mx-auto px-8 py-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Music className="w-8 h-8 text-gloss-gold" />
+                            <h1 className="text-2xl font-bold text-gloss-gold tracking-wide">
+                                Sound Library
+                            </h1>
+                        </div>
+
+                        <nav className="flex items-center gap-6">
+                            <Link
+                                href="/"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 border-2 border-gloss-gold text-gloss-gold font-semibold transition-all hover:scale-105 shadow-lg"
+                            >
+                                <Home className="w-5 h-5" />
+                                <span>Home</span>
+                            </Link>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+
             <div className="container mx-auto px-8 py-12">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 place-items-center">
                     {soundLibrary.map((sound) => (
