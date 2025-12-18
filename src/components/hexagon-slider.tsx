@@ -1,33 +1,73 @@
-import React, { useState } from 'react';
+// components/hexagon-slider.tsx
+
+import React, { useState, useEffect } from 'react';
 import { Volume2 } from 'lucide-react';
-import {SoundUtils} from "@/lib/sound-utils";
+import { globalSoundUtils } from "@/lib/sound-utils";
+import { cn } from "@/lib/utils";
 
-/**
- *
- * @param soundLocation Relative to /sounds/
- * @param endCallback
- * @constructor
- */
-const HexagonSlider = ( { soundLocation }: {soundLocation: string}) => {
+interface HexagonSliderProps {
+    soundLocation: string;
+    masterVolume?: number;
+}
+
+const HexagonSlider = ({ soundLocation, masterVolume = 1 }: HexagonSliderProps) => {
     const [pitchRaw, setPitchRaw] = useState(50);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentEnd, setCurrentEnd] = useState<(() => void) | null>(null);
 
-    // raw pitch from 0-100. `
+    // Update global sound utils when master volume changes
+    useEffect(() => {
+        globalSoundUtils.setMasterVolume(masterVolume);
+    }, [masterVolume]);
 
+    const playSound = async () => {
+        // Stop previous sound if still playing
+        if (currentEnd) {
+            currentEnd();
+            setCurrentEnd(null);
+        }
+
+        setIsPlaying(true);
+
+        try {
+            const audioContext = new AudioContext();
+            const response = await fetch(`/sounds/${soundLocation}`);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+            const { end } = globalSoundUtils.playSample(
+                audioContext,
+                audioBuffer,
+                pitchRaw
+            );
+
+            setCurrentEnd(() => end);
+
+            // Wait for sound to finish or be stopped
+            setTimeout(() => {
+                setIsPlaying(false);
+                setCurrentEnd(null);
+                audioContext.close();
+            }, (audioBuffer.duration / (pitchRaw / 50)) * 1000);
+
+        } catch (error) {
+            console.error('Error playing sound:', error);
+            setIsPlaying(false);
+            setCurrentEnd(null);
+        }
+    };
 
     return (
         <div className="inline-flex items-center justify-center p-4">
             <div className="relative w-48 h-96">
-
-                <button className="absolute inset-0 flex items-center justify-center" onClick={() => {
-                    const audioContext = new AudioContext();
-                    fetch(`/sounds/${soundLocation}`)
-                        .then(response => response.arrayBuffer())
-                        .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-                        .then(audioBuffer => {
-                            const soundUtils = new SoundUtils();
-                            const { end } = soundUtils.playSample(audioContext, audioBuffer, pitchRaw);
-                        });
-                }}>
+                <button
+                    className={cn(
+                        "absolute inset-0 flex items-center justify-center focus:outline-none transition-all",
+                        !isPlaying && "hover:scale-105"
+                    )}
+                    onClick={playSound}
+                    aria-label="Play sound"
+                >
                     <svg
                         viewBox="0 0 200 400"
                         className="w-full h-full"
@@ -45,6 +85,10 @@ const HexagonSlider = ( { soundLocation }: {soundLocation: string}) => {
                             fill="url(#hexGradient)"
                             stroke="#d4af37"
                             strokeWidth="3"
+                            className={cn(
+                                "transition-opacity duration-200",
+                                isPlaying && "opacity-80"
+                            )}
                         />
 
                         <polygon
@@ -55,28 +99,40 @@ const HexagonSlider = ( { soundLocation }: {soundLocation: string}) => {
                     </svg>
                 </button>
 
-                <div className="absolute top-12 left-1/2 -translate-x-1/2">
-                    <Volume2 className="w-10 h-10 text-white" strokeWidth={2.5} />
+                <div className="absolute top-12 left-1/2 -translate-x-1/2 pointer-events-none">
+                    <Volume2
+                        className={cn(
+                            "w-10 h-10 text-white transition-transform duration-200",
+                            isPlaying && "scale-110"
+                        )}
+                        strokeWidth={2.5}
+                    />
                 </div>
 
                 <div className="absolute left-1/2 -translate-x-1/2 top-40 h-44">
                     <div className="relative w-8 h-full">
-
+                        {/* Background track */}
                         <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
 
+                        {/* Active track */}
                         <div
                             className="absolute left-1/2 -translate-x-1/2 w-1 bg-gloss-gold bg-opacity-80 rounded-full transition-all duration-200 bottom-0"
                             style={{ height: `${pitchRaw}%` }}
                         ></div>
 
-                        <div className="absolute left-1/2 -translate-x-1/2 w-full h-full flex flex-col justify-between py-1">
-                            {[...Array(9)].map((_, i) => (
+                        {/* Tick marks */}
+                        <div className="absolute left-1/2 -translate-x-1/2 w-full h-full flex flex-col justify-between py-1 pointer-events-none">
+                            {[...Array(10)].map((_, i) => (
                                 <div key={i} className="flex justify-center">
-                                    <div className="w-3 h-0.5 bg-gloss-offwhite opacity-50"></div>
+                                    <div className={cn(
+                                        "w-3 h-0.5 bg-gloss-offwhite opacity-50",
+                                        i === 5 ? 'w-5' : ''
+                                    )}></div>
                                 </div>
                             ))}
                         </div>
 
+                        {/* Slider input */}
                         <input
                             type="range"
                             min="0"
@@ -85,13 +141,16 @@ const HexagonSlider = ( { soundLocation }: {soundLocation: string}) => {
                             onChange={(e) => setPitchRaw(Number(e.target.value))}
                             className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
                             style={{
+                                // @ts-ignore For some reason, they throw errors but it works perfectly fine!
                                 writingMode: 'bt-lr',
                                 WebkitAppearance: 'slider-vertical',
+                                // @ts-ignore
                                 appearance: 'slider-vertical'
                             }}
-                            aria-label="Volume slider"
+                            aria-label="Pitch slider"
                         />
 
+                        {/* Slider thumb */}
                         <div
                             className="absolute left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-200"
                             style={{
@@ -112,7 +171,6 @@ const HexagonSlider = ( { soundLocation }: {soundLocation: string}) => {
                         </div>
                     </div>
                 </div>
-                
             </div>
         </div>
     );
