@@ -143,32 +143,36 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
 
     return (
         <>
-            <div className="inline-flex flex-col items-center justify-center p-4 gap-4">
-                <div className="relative w-48 h-[420px]">
-                    {/* Help Button - Top Left */}
+            <div className="inline-flex flex-col items-center justify-center gap-3">
+                {/* Top Buttons Row */}
+                <div className="flex gap-3">
+                    {/* Help Button */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             handleHelpClick();
                         }}
-                        className="absolute -top-2 -left-2 z-20 w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 border-2 border-gloss-gold flex items-center justify-center transition-all shadow-lg hover:scale-110"
+                        className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 border-2 border-gloss-gold flex items-center justify-center transition-all shadow-lg hover:scale-110"
                         aria-label="Help"
                     >
                         <HelpCircle className="w-5 h-5 text-gloss-gold" />
                     </button>
 
-                    {/* Reset Button - Top Right */}
+                    {/* Reset Button */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             resetPitch();
                         }}
-                        className="absolute -top-2 -right-2 z-20 w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 border-2 border-gloss-gold flex items-center justify-center transition-all shadow-lg hover:scale-110"
+                        className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 border-2 border-gloss-gold flex items-center justify-center transition-all shadow-lg hover:scale-110"
                         aria-label="Reset pitch"
                     >
                         <RotateCcw className="w-5 h-5 text-gloss-gold" />
                     </button>
+                </div>
 
+                {/* Hexagon Container */}
+                <div className="relative w-48 h-[420px]">
                     <button
                         className={cn(
                             "absolute inset-0 top-6 flex items-center justify-center focus:outline-none transition-all",
@@ -225,7 +229,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                     </div>
 
                     {/* Pitch Label - Above Slider */}
-                    <div className="absolute left-1/2 -translate-x-1/2 top-[165px] pointer-events-none">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-[175px] pointer-events-none">
                         <span className="text-gloss-gold font-semibold text-xs tracking-wide">
                             PITCH
                         </span>
@@ -263,8 +267,10 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                                 onChange={(e) => setPitchRaw(Number(e.target.value))}
                                 className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
                                 style={{
+                                    // @ts-ignore
                                     writingMode: 'bt-lr',
                                     WebkitAppearance: 'slider-vertical',
+                                    // @ts-ignore
                                     appearance: 'slider-vertical'
                                 }}
                                 aria-label="Pitch slider"
