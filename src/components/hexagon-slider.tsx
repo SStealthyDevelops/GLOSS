@@ -9,9 +9,10 @@ interface HexagonSliderProps {
     soundLocation: string;
     imageLocation: string;
     masterVolume?: number;
+    id: string;
 }
 
-const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: HexagonSliderProps) => {
+const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: HexagonSliderProps) => {
     const [pitchRaw, setPitchRaw] = useState(50);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
@@ -322,11 +323,8 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                 isOpen={isInfoPanelOpen}
                 onClose={() => setIsInfoPanelOpen(false)}
                 title="Sound Information"
-            >
-                <div className="text-gray-300 space-y-4">
-                    <p>Information about this sound will appear here.</p>
-                </div>
-            </InfoPanel>
+                id={id}
+            />
         </>
     );
 };

@@ -4,46 +4,9 @@ import HexagonSlider from "@/components/hexagon-slider";
 import { useState } from "react";
 import {Home, Music, Volume2, VolumeX} from "lucide-react";
 import Link from "next/link";
+import {soundLibrary} from "@/lib/sound-library";
 
-interface SoundItem {
-    id: string;
-    soundLocation: string;
-    imageLocation: string;
-    name: string;
-}
 
-const soundLibrary: SoundItem[] = [
-    {
-        id: "piano-a",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A"
-    },
-    {
-        id: "piano-b",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A"
-    },
-    {
-        id: "piano-c",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A"
-    },
-    {
-        id: "guitar-a",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A"
-    },
-    {
-        id: "drum-a",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A"
-    },
-];
 
 const MusicPage = () => {
     const [masterVolume, setMasterVolume] = useState(70);
@@ -78,6 +41,7 @@ const MusicPage = () => {
                     {soundLibrary.map((sound) => (
                         <HexagonSlider
                             key={sound.id}
+                            id={sound.id}
                             soundLocation={sound.soundLocation}
                             imageLocation={sound.imageLocation}
                             masterVolume={masterVolume / 100}

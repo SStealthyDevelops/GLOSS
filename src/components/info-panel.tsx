@@ -2,15 +2,16 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {getSoundDescriptionById} from "@/lib/sound-library";
 
 interface InfoPanelProps {
     isOpen: boolean;
     onClose: () => void;
     title?: string;
-    children?: React.ReactNode;
+    id: string;
 }
 
-const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPanelProps) => {
+const InfoPanel = ({ isOpen, onClose, title = "Information", id }: InfoPanelProps) => {
     const panelRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -77,11 +78,9 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPan
                 </div>
 
                 <div className="p-6 overflow-y-auto h-[calc(100%-88px)]">
-                    {children || (
-                        <div className="text-gray-300">
-                            <p>Panel content goes here...</p>
-                        </div>
-                    )}
+                    <p className="text-gloss-gold text-base">
+                        {getSoundDescriptionById(id)}
+                    </p>
                 </div>
             </div>
         </>
