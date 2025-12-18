@@ -1,5 +1,3 @@
-// app/music/page.tsx (or wherever your MusicPage is)
-
 "use client";
 
 import HexagonSlider from "@/components/hexagon-slider";
@@ -10,20 +8,25 @@ const MusicPage = () => {
     const [masterVolume, setMasterVolume] = useState(70);
 
     return (
-        <div className='h-screen w-screen bg-gloss-navy flex flex-col'>
-            {/* Master Volume Control */}
-            <div className="w-full p-6 flex items-center justify-center">
-                <div className="flex items-center gap-4 bg-white bg-opacity-10 rounded-lg px-6 py-4 backdrop-blur-sm shadow-lg">
-                    <VolumeX className="w-5 h-5 text-white opacity-60" />
+        <div className='h-screen w-screen bg-gloss-navy relative'>
+            <div className="h-full w-full flex items-center justify-center">
+                <HexagonSlider
+                    soundLocation='piano/piano_01_A.mp3'
+                    imageLocation='/images/piano-icon.png'
+                    masterVolume={masterVolume / 100}
+                />
+            </div>
 
-                    <div className="relative w-64 h-2 bg-white bg-opacity-20 rounded-full">
-                        {/* Progress bar */}
+            <div className="absolute bottom-8 left-8">
+                <div className="flex items-center gap-4 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg px-6 py-4 backdrop-blur-sm shadow-2xl border border-gloss-gold border-opacity-30">
+                    <VolumeX className="w-5 h-5 text-gloss-gold opacity-70" />
+
+                    <div className="relative w-48 h-3 bg-slate-900 bg-opacity-60 rounded-full shadow-inner">
                         <div
-                            className="absolute left-0 top-0 h-full bg-gradient-to-r from-gloss-gold to-yellow-500 rounded-full transition-all duration-200"
+                            className="absolute left-0 top-0 h-full bg-gradient-to-r from-gloss-gold via-yellow-500 to-gloss-gold rounded-full transition-all duration-200 shadow-md"
                             style={{ width: `${masterVolume}%` }}
                         ></div>
 
-                        {/* Slider input */}
                         <input
                             type="range"
                             min="0"
@@ -34,27 +37,23 @@ const MusicPage = () => {
                             aria-label="Master volume"
                         />
 
-                        {/* Slider thumb */}
                         <div
-                            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg pointer-events-none transition-all duration-200"
-                            style={{ left: `calc(${masterVolume}% - 8px)` }}
+                            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-gradient-to-br from-yellow-300 to-gloss-gold rounded-full shadow-lg border-2 border-slate-900 pointer-events-none transition-all duration-200"
+                            style={{ left: `calc(${masterVolume}% - 10px)` }}
                         ></div>
                     </div>
 
-                    <Volume2 className="w-5 h-5 text-white" />
+                    <Volume2 className="w-5 h-5 text-gloss-gold" />
 
-                    <span className="text-white font-medium text-lg min-w-[3ch] text-right">
-                        {masterVolume}
-                    </span>
+                    <div className="flex flex-col items-center min-w-[3ch]">
+                        <span className="text-gloss-gold font-bold text-xl">
+                            {masterVolume}
+                        </span>
+                        <span className="text-gloss-gold text-xs opacity-70">
+                            VOL
+                        </span>
+                    </div>
                 </div>
-            </div>
-
-            {/* Hexagon Slider */}
-            <div className="flex-1 flex items-center justify-center">
-                <HexagonSlider
-                    soundLocation='piano/piano_01_A.mp3'
-                    masterVolume={masterVolume / 100}
-                />
             </div>
         </div>
     );

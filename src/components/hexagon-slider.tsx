@@ -1,27 +1,24 @@
-// components/hexagon-slider.tsx
-
 import React, { useState, useEffect } from 'react';
-import { Volume2 } from 'lucide-react';
 import { globalSoundUtils } from "@/lib/sound-utils";
 import { cn } from "@/lib/utils";
+import Image from 'next/image';
 
 interface HexagonSliderProps {
     soundLocation: string;
+    imageLocation: string;
     masterVolume?: number;
 }
 
-const HexagonSlider = ({ soundLocation, masterVolume = 1 }: HexagonSliderProps) => {
+const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: HexagonSliderProps) => {
     const [pitchRaw, setPitchRaw] = useState(50);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentEnd, setCurrentEnd] = useState<(() => void) | null>(null);
 
-    // Update global sound utils when master volume changes
     useEffect(() => {
         globalSoundUtils.setMasterVolume(masterVolume);
     }, [masterVolume]);
 
     const playSound = async () => {
-        // Stop previous sound if still playing
         if (currentEnd) {
             currentEnd();
             setCurrentEnd(null);
@@ -43,7 +40,6 @@ const HexagonSlider = ({ soundLocation, masterVolume = 1 }: HexagonSliderProps) 
 
             setCurrentEnd(() => end);
 
-            // Wait for sound to finish or be stopped
             setTimeout(() => {
                 setIsPlaying(false);
                 setCurrentEnd(null);
@@ -100,27 +96,36 @@ const HexagonSlider = ({ soundLocation, masterVolume = 1 }: HexagonSliderProps) 
                 </button>
 
                 <div className="absolute top-12 left-1/2 -translate-x-1/2 pointer-events-none">
-                    <Volume2
-                        className={cn(
-                            "w-10 h-10 text-white transition-transform duration-200",
-                            isPlaying && "scale-110"
-                        )}
-                        strokeWidth={2.5}
-                    />
+                    <div className={cn(
+                        "w-20 h-20 rounded-lg overflow-hidden shadow-lg transition-transform duration-200",
+                        isPlaying && "scale-110"
+                    )}>
+                        {
+                            imageLocation ? (
+                                <Image
+                                    src={imageLocation}
+                                    alt="Sound icon"
+                                    width={80}
+                                    height={80}
+                                    objectFit="fill"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <></>
+                            )
+                        }
+                    </div>
                 </div>
 
                 <div className="absolute left-1/2 -translate-x-1/2 top-40 h-44">
                     <div className="relative w-8 h-full">
-                        {/* Background track */}
                         <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
 
-                        {/* Active track */}
                         <div
                             className="absolute left-1/2 -translate-x-1/2 w-1 bg-gloss-gold bg-opacity-80 rounded-full transition-all duration-200 bottom-0"
                             style={{ height: `${pitchRaw}%` }}
                         ></div>
 
-                        {/* Tick marks */}
                         <div className="absolute left-1/2 -translate-x-1/2 w-full h-full flex flex-col justify-between py-1 pointer-events-none">
                             {[...Array(10)].map((_, i) => (
                                 <div key={i} className="flex justify-center">
@@ -132,7 +137,6 @@ const HexagonSlider = ({ soundLocation, masterVolume = 1 }: HexagonSliderProps) 
                             ))}
                         </div>
 
-                        {/* Slider input */}
                         <input
                             type="range"
                             min="0"
@@ -141,7 +145,7 @@ const HexagonSlider = ({ soundLocation, masterVolume = 1 }: HexagonSliderProps) 
                             onChange={(e) => setPitchRaw(Number(e.target.value))}
                             className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
                             style={{
-                                // @ts-ignore For some reason, they throw errors but it works perfectly fine!
+                                // @ts-ignore
                                 writingMode: 'bt-lr',
                                 WebkitAppearance: 'slider-vertical',
                                 // @ts-ignore
@@ -150,7 +154,6 @@ const HexagonSlider = ({ soundLocation, masterVolume = 1 }: HexagonSliderProps) 
                             aria-label="Pitch slider"
                         />
 
-                        {/* Slider thumb */}
                         <div
                             className="absolute left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-200"
                             style={{
