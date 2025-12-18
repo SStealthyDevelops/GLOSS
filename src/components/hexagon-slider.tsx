@@ -254,8 +254,10 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                             onChange={(e) => setPitchRaw(Number(e.target.value))}
                             className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
                             style={{
+                                // @ts-ignore
                                 writingMode: 'bt-lr',
                                 WebkitAppearance: 'slider-vertical',
+                                // @ts-ignore
                                 appearance: 'slider-vertical'
                             }}
                             aria-label="Pitch slider"
