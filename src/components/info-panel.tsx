@@ -1,4 +1,3 @@
-// components/info-panel.tsx
 
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
@@ -14,7 +13,6 @@ interface InfoPanelProps {
 const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPanelProps) => {
     const panelRef = useRef<HTMLDivElement>(null);
 
-    // Handle click outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
@@ -23,7 +21,6 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPan
         };
 
         if (isOpen) {
-            // Add a small delay to prevent immediate closing on the same click that opened it
             setTimeout(() => {
                 document.addEventListener('mousedown', handleClickOutside);
             }, 100);
@@ -34,7 +31,6 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPan
         };
     }, [isOpen, onClose]);
 
-    // Handle escape key
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -55,7 +51,6 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPan
 
     return (
         <>
-            {/* Backdrop with blur */}
             <div
                 className={cn(
                     "fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40 transition-opacity duration-300",
@@ -63,7 +58,6 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPan
                 )}
             />
 
-            {/* Side Panel */}
             <div
                 ref={panelRef}
                 className={cn(
@@ -71,7 +65,6 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPan
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gloss-gold border-opacity-30">
                     <h2 className="text-2xl font-bold text-gloss-gold">{title}</h2>
                     <button
@@ -83,7 +76,6 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", children }: InfoPan
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="p-6 overflow-y-auto h-[calc(100%-88px)]">
                     {children || (
                         <div className="text-gray-300">

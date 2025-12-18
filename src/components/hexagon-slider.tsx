@@ -1,5 +1,3 @@
-// components/hexagon-slider.tsx
-
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Square, RotateCcw, HelpCircle } from 'lucide-react';
 import { globalSoundUtils } from "@/lib/sound-utils";
@@ -21,12 +19,10 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
     const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
 
-    // Update global sound utils when master volume changes
     useEffect(() => {
         globalSoundUtils.setMasterVolume(masterVolume);
     }, [masterVolume]);
 
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (currentEnd) {
@@ -39,20 +35,17 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
     }, []);
 
     const playSound = async () => {
-        // If paused, resume - otherwise start new
         if (isPaused && audioContext && audioContext.state !== 'closed') {
             await audioContext.resume();
             setIsPaused(false);
             return;
         }
 
-        // Stop previous sound if still playing
         if (currentEnd) {
             currentEnd();
             setCurrentEnd(null);
         }
 
-        // Close previous audio context if it exists
         if (audioContext && audioContext.state !== 'closed') {
             await audioContext.close();
         }
@@ -144,9 +137,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
     return (
         <>
             <div className="inline-flex flex-col items-center justify-center gap-3">
-                {/* Top Buttons Row */}
                 <div className="flex gap-3">
-                    {/* Help Button */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -158,7 +149,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                         <HelpCircle className="w-5 h-5 text-gloss-gold" />
                     </button>
 
-                    {/* Reset Button */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -171,7 +161,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                     </button>
                 </div>
 
-                {/* Hexagon Container */}
                 <div className="relative w-48 h-[420px]">
                     <button
                         className={cn(
@@ -212,7 +201,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                         </svg>
                     </button>
 
-                    {/* Image Display */}
                     <div className="absolute top-[70px] left-1/2 -translate-x-1/2 pointer-events-none">
                         <div className={cn(
                             "w-20 h-20 rounded-lg overflow-hidden shadow-lg transition-transform duration-200",
@@ -228,7 +216,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                         </div>
                     </div>
 
-                    {/* Pitch Label - Above Slider */}
                     <div className="absolute left-1/2 -translate-x-1/2 top-[175px] pointer-events-none">
                         <span className="text-gloss-gold font-semibold text-xs tracking-wide">
                             PITCH
@@ -237,16 +224,13 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
 
                     <div className="absolute left-1/2 -translate-x-1/2 top-[195px] h-44">
                         <div className="relative w-8 h-full">
-                            {/* Background track */}
                             <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
 
-                            {/* Active track */}
                             <div
                                 className="absolute left-1/2 -translate-x-1/2 w-1 bg-gloss-gold bg-opacity-80 rounded-full transition-all duration-200 bottom-0"
                                 style={{ height: `${pitchRaw}%` }}
                             ></div>
 
-                            {/* Tick marks */}
                             <div className="absolute left-1/2 -translate-x-1/2 w-full h-full flex flex-col justify-between py-1 pointer-events-none">
                                 {[...Array(10)].map((_, i) => (
                                     <div key={i} className="flex justify-center">
@@ -258,7 +242,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                                 ))}
                             </div>
 
-                            {/* Slider input */}
                             <input
                                 type="range"
                                 min="0"
@@ -276,7 +259,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                                 aria-label="Pitch slider"
                             />
 
-                            {/* Slider thumb */}
                             <div
                                 className="absolute left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-200"
                                 style={{
@@ -299,9 +281,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                     </div>
                 </div>
 
-                {/* Control Buttons - Below Hexagon */}
                 <div className="flex gap-3">
-                    {/* Play/Pause Button */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -321,7 +301,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                         )}
                     </button>
 
-                    {/* Stop Button */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -339,7 +318,6 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                 </div>
             </div>
 
-            {/* Info Panel */}
             <InfoPanel
                 isOpen={isInfoPanelOpen}
                 onClose={() => setIsInfoPanelOpen(false)}
