@@ -144,7 +144,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
     return (
         <>
             <div className="inline-flex flex-col items-center justify-center p-4 gap-4">
-                <div className="relative w-48 h-96">
+                <div className="relative w-48 h-[420px]">
                     {/* Help Button - Top Left */}
                     <button
                         onClick={(e) => {
@@ -171,7 +171,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
 
                     <button
                         className={cn(
-                            "absolute inset-0 flex items-center justify-center focus:outline-none transition-all",
+                            "absolute inset-0 top-6 flex items-center justify-center focus:outline-none transition-all",
                             !isPlaying && "hover:scale-105"
                         )}
                         onClick={handleHexagonClick}
@@ -209,7 +209,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                     </button>
 
                     {/* Image Display */}
-                    <div className="absolute top-12 left-1/2 -translate-x-1/2 pointer-events-none">
+                    <div className="absolute top-[70px] left-1/2 -translate-x-1/2 pointer-events-none">
                         <div className={cn(
                             "w-20 h-20 rounded-lg overflow-hidden shadow-lg transition-transform duration-200",
                             isPlaying && !isPaused && "scale-110"
@@ -224,7 +224,14 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                         </div>
                     </div>
 
-                    <div className="absolute left-1/2 -translate-x-1/2 top-40 h-44">
+                    {/* Pitch Label - Above Slider */}
+                    <div className="absolute left-1/2 -translate-x-1/2 top-[165px] pointer-events-none">
+                        <span className="text-gloss-gold font-semibold text-xs tracking-wide">
+                            PITCH
+                        </span>
+                    </div>
+
+                    <div className="absolute left-1/2 -translate-x-1/2 top-[195px] h-44">
                         <div className="relative w-8 h-full">
                             {/* Background track */}
                             <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
@@ -256,10 +263,8 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1 }: Hexag
                                 onChange={(e) => setPitchRaw(Number(e.target.value))}
                                 className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
                                 style={{
-                                    // @ts-ignore
                                     writingMode: 'bt-lr',
                                     WebkitAppearance: 'slider-vertical',
-                                    // @ts-ignore
                                     appearance: 'slider-vertical'
                                 }}
                                 aria-label="Pitch slider"
