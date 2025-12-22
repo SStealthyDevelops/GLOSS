@@ -31,7 +31,12 @@ export class SoundUtils {
         rawPitchRate: number,
         individualVolume: number = 1
     ) {
-        const rate = rawPitchRate / 50; // Convert 0-100 scale to 0.0-2.0 scale
+
+        const mapSliderVal = (val: number) => {
+            return 0.5 + (val / 2) * 1.5;
+        }
+
+        const rate = mapSliderVal(rawPitchRate); // Map 0-2 to 0.5 to 2 range
 
         const source = audioContext.createBufferSource();
         const gainNode = audioContext.createGain();
@@ -93,7 +98,7 @@ export class SoundUtils {
      * @returns Playback rate (0.0 to 2.0)
      */
     public rawPitchToRate(rawPitchRate: number): number {
-        return rawPitchRate / 50;
+        return Math.max(0.3, rawPitchRate / 50);
     }
 
     /**
