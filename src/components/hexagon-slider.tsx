@@ -248,7 +248,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                                 min="0"
                                 max="100"
                                 value={pitchRaw}
-                                onChange={(e) => setPitchRaw(Number(e.target.value))}
+                                onChange={(e) => setPitchRaw(Math.max(Number(e.target.value), 1))}
                                 className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
                                 style={{
                                     // @ts-ignore

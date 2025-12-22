@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,10 +8,12 @@ interface InfoPanelProps {
     onClose: () => void;
     title?: string;
     id: string;
+    imageUrl?: string; // Optional image URL prop
 }
 
 const InfoPanel = ({ isOpen, onClose, title = "Information", id }: InfoPanelProps) => {
     const panelRef = useRef<HTMLDivElement>(null);
+    const imageUrl = '/images/professor.png';
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -66,16 +67,27 @@ const InfoPanel = ({ isOpen, onClose, title = "Information", id }: InfoPanelProp
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                <div className="flex items-center justify-between p-6 border-b border-gloss-gold border-opacity-30">
-                    <h2 className="text-2xl font-bold text-gloss-gold">{title}</h2>
+
+                <div className="relative flex items-center justify-center p-6 border-b border-gloss-gold border-opacity-30">
+                    <h2 className="text-2xl font-bold text-gloss-gold text-center">{title}</h2>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center transition-all hover:scale-110"
+                        className="absolute right-6 w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center transition-all hover:scale-110"
                         aria-label="Close panel"
                     >
                         <X className="w-5 h-5 text-gloss-gold" />
                     </button>
                 </div>
+
+                {imageUrl && (
+                    <div className="w-full overflow-hidden">
+                        <img
+                            src={imageUrl}
+                            alt={title}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                )}
 
                 <div className="p-6 overflow-y-auto h-[calc(100%-88px)]">
                     <p className="text-gloss-gold text-base">
