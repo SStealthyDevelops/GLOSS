@@ -17,6 +17,10 @@ export class SoundUtils {
         return this.masterVolume;
     }
 
+    public mapSliderVal = (val: number) => {
+        return 0.5 + 0.015 * val;
+    }
+
     /**
      * Play a sample with pitch shifting and volume control
      * @param audioContext - The Web Audio API context
@@ -32,11 +36,8 @@ export class SoundUtils {
         individualVolume: number = 1
     ) {
 
-        const mapSliderVal = (val: number) => {
-            return 0.5 + (val / 2) * 1.5;
-        }
+        const rate = Math.max(0.80, this.mapSliderVal(rawPitchRate)); // Map 0-100 to 0.5 to 2 range
 
-        const rate = mapSliderVal(rawPitchRate); // Map 0-2 to 0.5 to 2 range
 
         const source = audioContext.createBufferSource();
         const gainNode = audioContext.createGain();
@@ -92,14 +93,6 @@ export class SoundUtils {
         return this.activeSources.size;
     }
 
-    /**
-     * Convert raw pitch value to playback rate
-     * @param rawPitchRate - Value from 0-100
-     * @returns Playback rate (0.0 to 2.0)
-     */
-    public rawPitchToRate(rawPitchRate: number): number {
-        return Math.max(0.3, rawPitchRate / 50);
-    }
 
     /**
      * Convert pitch value to semitones for musical applications
@@ -107,7 +100,7 @@ export class SoundUtils {
      * @returns Semitones offset from original pitch
      */
     public pitchToSemitones(rawPitchRate: number): number {
-        const rate = this.rawPitchToRate(rawPitchRate);
+        const rate = this.mapSliderVal(rawPitchRate);
         return 12 * Math.log2(rate);
     }
 }
