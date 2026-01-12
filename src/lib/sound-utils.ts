@@ -37,16 +37,13 @@ export class SoundUtils {
     ) {
 
         const rate = Math.max(0.80, this.mapSliderVal(rawPitchRate)); // Map 0-100 to 0.5 to 2 range
-
-
         const source = audioContext.createBufferSource();
         const gainNode = audioContext.createGain();
 
         source.buffer = audioBuffer;
         source.playbackRate.value = rate; // 1 = original speed/pitch, 2 = twice as fast/high
 
-        const finalVolume = this.masterVolume * individualVolume;
-        gainNode.gain.value = finalVolume;
+        gainNode.gain.value = this.masterVolume * individualVolume;
 
         source.connect(gainNode);
         gainNode.connect(audioContext.destination);

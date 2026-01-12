@@ -4,6 +4,7 @@ import { globalSoundUtils } from "@/lib/sound-utils";
 import { cn } from "@/lib/utils";
 import Image from 'next/image';
 import InfoPanel from './info-panel';
+import {getSoundById} from "@/lib/sound-library";
 
 interface HexagonSliderProps {
     soundLocation: string;
@@ -322,7 +323,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
             <InfoPanel
                 isOpen={isInfoPanelOpen}
                 onClose={() => setIsInfoPanelOpen(false)}
-                title="Sound Information"
+                title={getSoundById(id)?.name || 'Sound Info'}
                 id={id}
             />
         </>
