@@ -22,36 +22,40 @@ export const soundLibrary: SoundItem[] = [
             " dates to 1896-97. Today, pianos remain central to classical music, jazz, and popular music, continuing to inspire composers and performers with their rich tonal palette and expressive range."
     },
     {
-        id: "piano-b",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A",
+        id: "basement-photo-copier  ",
+        soundLocation: "random/basement_photo_copier_safelight_01.mp3",
+        imageLocation: "/images/basement.jpg",
+        name: "Basement Photo Copier",
         description: "A soothing piano sound, B."
     },
     {
-        id: "piano-c",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A",
+        id: "bathroom_sink_cold",
+        soundLocation: "random/bathroom_sink_cold_tap.mp3",
+        imageLocation: "/images/bathroom_sink.jpg",
+        name: "Bathroom Sink Cold Tap",
         description: "A soothing piano sound, C."
     },
     {
-        id: "guitar-a",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A",
+        id: "xylophone-a",
+        soundLocation: "xylophone/xylophone_a_3.mp3",
+        imageLocation: "/images/xylophone.jpg",
+        name: "Xylophone A",
         description: "A soothing piano sound."
     },
     {
-        id: "drum-a",
-        soundLocation: "piano/piano_01_A.mp3",
-        imageLocation: "/images/piano-icon.jpg",
-        name: "Piano A",
+        id: "staff-bell-lo-b",
+        soundLocation: "random/staff_bell_lo_b.mp3",
+        imageLocation: "/images/staff_bell.jpg",
+        name: "Staff Bell Lo B",
         description: "A soothing piano sound."
     },
+
 ];
 
 export const getSoundDescriptionById = (id: string): string | undefined => {
-    console.log(id);
     return soundLibrary.find(sound => sound.id === id)?.description || 'A radical instrument!';
+}
+
+export const getSoundById = (id: string): SoundItem | undefined => {
+    return soundLibrary.find(sound => sound.id === id);
 }
