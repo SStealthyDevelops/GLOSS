@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, RotateCcw, HelpCircle } from 'lucide-react';
 import { globalSoundUtils } from "@/lib/sound-utils";
 import { cn } from "@/lib/utils";
@@ -15,107 +15,158 @@ interface HexagonSliderProps {
 
 const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: HexagonSliderProps) => {
     const [pitchRaw, setPitchRaw] = useState(50);
+    const [volumeRaw, setVolumeRaw] = useState(50); // 50 = 100% (1x gain)
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    const [currentEnd, setCurrentEnd] = useState<(() => void) | null>(null);
-    const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
     const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
 
+    // Refs to store audio nodes for real-time control
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const audioBufferRef = useRef<AudioBuffer | null>(null);
+    const gainNodeRef = useRef<GainNode | null>(null);
+    const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+    const endFunctionRef = useRef<(() => void) | null>(null);
+
+    // Update master volume when prop changes
     useEffect(() => {
         globalSoundUtils.setMasterVolume(masterVolume);
-    }, [masterVolume]);
 
+        // If currently playing, update the gain to reflect new master volume
+        if (gainNodeRef.current && isPlaying) {
+            globalSoundUtils.updateVolume(gainNodeRef.current, volumeRaw);
+        }
+    }, [masterVolume, isPlaying, volumeRaw]);
+
+    // Update pitch in real-time when slider changes
+    useEffect(() => {
+        if (sourceNodeRef.current && isPlaying && !isPaused) {
+            globalSoundUtils.updatePitch(sourceNodeRef.current, pitchRaw);
+        }
+    }, [pitchRaw, isPlaying, isPaused]);
+
+    // Update volume in real-time when slider changes
+    useEffect(() => {
+        if (gainNodeRef.current && isPlaying) {
+            globalSoundUtils.updateVolume(gainNodeRef.current, volumeRaw);
+        }
+    }, [volumeRaw, isPlaying]);
+
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
-            if (currentEnd) {
-                currentEnd();
+            if (endFunctionRef.current) {
+                endFunctionRef.current();
             }
-            if (audioContext && audioContext.state !== 'closed') {
-                audioContext.close();
+            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+                audioContextRef.current.close();
             }
         };
     }, []);
 
     const playSound = async () => {
-        if (isPaused && audioContext && audioContext.state !== 'closed') {
-            await audioContext.resume();
+        // If paused, just resume the audio context
+        if (isPaused && audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            await audioContextRef.current.resume();
             setIsPaused(false);
             return;
         }
 
-        if (currentEnd) {
-            currentEnd();
-            setCurrentEnd(null);
+        // Stop any currently playing sound
+        if (endFunctionRef.current) {
+            endFunctionRef.current();
+            endFunctionRef.current = null;
         }
 
-        if (audioContext && audioContext.state !== 'closed') {
-            await audioContext.close();
+        // Close old context if exists
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            await audioContextRef.current.close();
         }
 
         setIsPlaying(true);
         setIsPaused(false);
 
         try {
+            // Create new audio context
             const newAudioContext = new AudioContext();
-            setAudioContext(newAudioContext);
+            audioContextRef.current = newAudioContext;
 
-            const response = await fetch(`/sounds/${soundLocation}`);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await newAudioContext.decodeAudioData(arrayBuffer);
+            // Load and decode audio buffer (or reuse if already loaded)
+            let audioBuffer = audioBufferRef.current;
+            if (!audioBuffer) {
+                const response = await fetch(`/sounds/${soundLocation}`);
+                const arrayBuffer = await response.arrayBuffer();
+                audioBuffer = await newAudioContext.decodeAudioData(arrayBuffer);
+                audioBufferRef.current = audioBuffer; // Cache for future use
+            }
 
-            const { end } = globalSoundUtils.playSample(
+            // Play the sample and get references to nodes
+            const { end, gainNode, sourceNode } = globalSoundUtils.playSample(
                 newAudioContext,
                 audioBuffer,
-                pitchRaw
+                pitchRaw,
+                volumeRaw
             );
 
-            setCurrentEnd(() => end);
+            // Store references for real-time control
+            gainNodeRef.current = gainNode;
+            sourceNodeRef.current = sourceNode;
+            endFunctionRef.current = end;
 
-            // Wait for sound to finish or be stopped
-            const duration = (audioBuffer.duration / (pitchRaw / 50)) * 1000;
+            // Calculate duration based on pitch
+            const duration = (audioBuffer.duration / (globalSoundUtils.mapSliderVal(pitchRaw))) * 1000;
+
+            // Auto-stop when sound finishes
             setTimeout(() => {
-                setIsPlaying(false);
-                setIsPaused(false);
-                setCurrentEnd(null);
+                // Only reset if this is still the current sound
+                if (sourceNodeRef.current === sourceNode) {
+                    setIsPlaying(false);
+                    setIsPaused(false);
+                    gainNodeRef.current = null;
+                    sourceNodeRef.current = null;
+                    endFunctionRef.current = null;
 
-                // Only close if still open
-                if (newAudioContext.state !== 'closed') {
-                    newAudioContext.close().catch(err => {
-                        console.warn('Error closing audio context:', err);
-                    });
+                    if (newAudioContext.state !== 'closed') {
+                        newAudioContext.close().catch(err => {
+                            console.warn('Error closing audio context:', err);
+                        });
+                    }
+                    audioContextRef.current = null;
                 }
-                setAudioContext(null);
             }, duration);
 
         } catch (error) {
             console.error('Error playing sound:', error);
             setIsPlaying(false);
             setIsPaused(false);
-            setCurrentEnd(null);
-            setAudioContext(null);
+            gainNodeRef.current = null;
+            sourceNodeRef.current = null;
+            endFunctionRef.current = null;
+            audioContextRef.current = null;
         }
     };
 
     const pauseSound = async () => {
-        if (audioContext && isPlaying && !isPaused && audioContext.state === 'running') {
-            await audioContext.suspend();
+        if (audioContextRef.current && isPlaying && !isPaused && audioContextRef.current.state === 'running') {
+            await audioContextRef.current.suspend();
             setIsPaused(true);
         }
     };
 
     const stopSound = () => {
-        if (currentEnd) {
-            currentEnd();
-            setCurrentEnd(null);
+        if (endFunctionRef.current) {
+            endFunctionRef.current();
+            endFunctionRef.current = null;
         }
 
-        if (audioContext && audioContext.state !== 'closed') {
-            audioContext.close().catch(err => {
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close().catch(err => {
                 console.warn('Error closing audio context:', err);
             });
-            setAudioContext(null);
+            audioContextRef.current = null;
         }
 
+        gainNodeRef.current = null;
+        sourceNodeRef.current = null;
         setIsPlaying(false);
         setIsPaused(false);
     };
@@ -163,7 +214,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                     </button>
                 </div>
 
-                <div className="relative w-48 h-[420px]">
+                <div className="relative w-72 h-[420px]">
                     <button
                         className={cn(
                             "absolute inset-0 top-6 flex items-center justify-center focus:outline-none transition-all",
@@ -173,7 +224,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                         aria-label={isPlaying && !isPaused ? "Pause sound" : "Play sound"}
                     >
                         <svg
-                            viewBox="0 0 200 400"
+                            viewBox="0 0 300 400"
                             className="w-full h-full"
                             style={{ filter: 'drop-shadow(0 4px 12px rgba(30, 58, 95, 0.2))' }}
                         >
@@ -185,7 +236,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                             </defs>
 
                             <polygon
-                                points="100,15 175,60 175,340 100,385 25,340 25,60"
+                                points="150,15 260,60 260,340 150,385 40,340 40,60"
                                 fill="url(#hexGradient)"
                                 stroke="#d4af37"
                                 strokeWidth="3"
@@ -196,7 +247,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                             />
 
                             <polygon
-                                points="100,25 155,55 155,115 100,145 45,115 45,55"
+                                points="150,25 215,55 215,115 150,145 85,115 85,55"
                                 fill="#4a7ba7"
                                 opacity="0.8"
                             />
@@ -218,13 +269,79 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                         </div>
                     </div>
 
-                    <div className="absolute left-1/2 -translate-x-1/2 top-[175px] pointer-events-none">
+                    {/* Volume Slider (Left) */}
+                    <div className="absolute left-[105px] -translate-x-1/2 top-[175px] pointer-events-none">
+                        <span className="text-gloss-gold font-semibold text-xs tracking-wide">
+                            VOLUME
+                        </span>
+                    </div>
+
+                    <div className="absolute left-[105px] -translate-x-1/2 top-[195px] h-44">
+                        <div className="relative w-8 h-full">
+                            <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
+
+                            <div
+                                className="absolute left-1/2 -translate-x-1/2 w-1 bg-gloss-gold bg-opacity-80 rounded-full transition-all duration-200 bottom-0"
+                                style={{ height: `${volumeRaw}%` }}
+                            ></div>
+
+                            <div className="absolute left-1/2 -translate-x-1/2 w-full h-full flex flex-col justify-between py-1 pointer-events-none">
+                                {[...Array(10)].map((_, i) => (
+                                    <div key={i} className="flex justify-center">
+                                        <div className={cn(
+                                            "w-3 h-0.5 bg-gloss-offwhite opacity-50",
+                                            i === 5 ? 'w-5' : ''
+                                        )}></div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={volumeRaw}
+                                onChange={(e) => setVolumeRaw(Math.max(Number(e.target.value), 0))}
+                                className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
+                                style={{
+                                    // @ts-ignore
+                                    writingMode: 'bt-lr',
+                                    WebkitAppearance: 'slider-vertical',
+                                    // @ts-ignore
+                                    appearance: 'slider-vertical'
+                                }}
+                                aria-label="Volume slider"
+                            />
+
+                            <div
+                                className="absolute left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-200"
+                                style={{
+                                    bottom: `calc(${volumeRaw}% - 16px)`,
+                                }}
+                            >
+                                <div className="relative">
+                                    <div className="w-10 h-2 bg-gradient-to-b from-gloss-gold to-yellow-600 rounded-t"></div>
+
+                                    <div className="w-10 h-8 bg-gradient-to-b from-gray-200 to-gray-300 shadow-lg border-x-2 border-gloss-navy flex flex-col items-center justify-center gap-1 py-1">
+                                        <div className="w-6 h-0.5 bg-gloss-navy rounded-full"></div>
+                                        <div className="w-6 h-0.5 bg-gloss-navy rounded-full"></div>
+                                        <div className="w-6 h-0.5 bg-gloss-navy rounded-full"></div>
+                                    </div>
+
+                                    <div className="w-10 h-1 bg-gradient-to-b from-gray-400 to-gray-500 rounded-b"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Pitch Slider (Right) */}
+                    <div className="absolute left-[195px] -translate-x-1/2 top-[175px] pointer-events-none">
                         <span className="text-gloss-gold font-semibold text-xs tracking-wide">
                             PITCH
                         </span>
                     </div>
 
-                    <div className="absolute left-1/2 -translate-x-1/2 top-[195px] h-44">
+                    <div className="absolute left-[195px] -translate-x-1/2 top-[195px] h-44">
                         <div className="relative w-8 h-full">
                             <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
 
