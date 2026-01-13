@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Square, RotateCcw, HelpCircle } from 'lucide-react';
 import { globalSoundUtils } from "@/lib/sound-utils";
 import { cn } from "@/lib/utils";
@@ -15,108 +15,158 @@ interface HexagonSliderProps {
 
 const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: HexagonSliderProps) => {
     const [pitchRaw, setPitchRaw] = useState(50);
-    const [volumeRaw, setVolumeRaw] = useState(50);
+    const [volumeRaw, setVolumeRaw] = useState(100);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    const [currentEnd, setCurrentEnd] = useState<(() => void) | null>(null);
-    const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
     const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
 
+    // Refs to store audio nodes for real-time control
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const audioBufferRef = useRef<AudioBuffer | null>(null);
+    const gainNodeRef = useRef<GainNode | null>(null);
+    const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+    const endFunctionRef = useRef<(() => void) | null>(null);
+
+    // Update master volume when prop changes
     useEffect(() => {
         globalSoundUtils.setMasterVolume(masterVolume);
-    }, [masterVolume]);
 
+        // If currently playing, update the gain to reflect new master volume
+        if (gainNodeRef.current && isPlaying) {
+            globalSoundUtils.updateVolume(gainNodeRef.current, volumeRaw);
+        }
+    }, [masterVolume, isPlaying, volumeRaw]);
+
+    // Update pitch in real-time when slider changes
+    useEffect(() => {
+        if (sourceNodeRef.current && isPlaying && !isPaused) {
+            globalSoundUtils.updatePitch(sourceNodeRef.current, pitchRaw);
+        }
+    }, [pitchRaw, isPlaying, isPaused]);
+
+    // Update volume in real-time when slider changes
+    useEffect(() => {
+        if (gainNodeRef.current && isPlaying) {
+            globalSoundUtils.updateVolume(gainNodeRef.current, volumeRaw);
+        }
+    }, [volumeRaw, isPlaying]);
+
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
-            if (currentEnd) {
-                currentEnd();
+            if (endFunctionRef.current) {
+                endFunctionRef.current();
             }
-            if (audioContext && audioContext.state !== 'closed') {
-                audioContext.close();
+            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+                audioContextRef.current.close();
             }
         };
     }, []);
 
     const playSound = async () => {
-        if (isPaused && audioContext && audioContext.state !== 'closed') {
-            await audioContext.resume();
+        // If paused, just resume the audio context
+        if (isPaused && audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            await audioContextRef.current.resume();
             setIsPaused(false);
             return;
         }
 
-        if (currentEnd) {
-            currentEnd();
-            setCurrentEnd(null);
+        // Stop any currently playing sound
+        if (endFunctionRef.current) {
+            endFunctionRef.current();
+            endFunctionRef.current = null;
         }
 
-        if (audioContext && audioContext.state !== 'closed') {
-            await audioContext.close();
+        // Close old context if exists
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            await audioContextRef.current.close();
         }
 
         setIsPlaying(true);
         setIsPaused(false);
 
         try {
+            // Create new audio context
             const newAudioContext = new AudioContext();
-            setAudioContext(newAudioContext);
+            audioContextRef.current = newAudioContext;
 
-            const response = await fetch(`/sounds/${soundLocation}`);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await newAudioContext.decodeAudioData(arrayBuffer);
+            // Load and decode audio buffer (or reuse if already loaded)
+            let audioBuffer = audioBufferRef.current;
+            if (!audioBuffer) {
+                const response = await fetch(`/sounds/${soundLocation}`);
+                const arrayBuffer = await response.arrayBuffer();
+                audioBuffer = await newAudioContext.decodeAudioData(arrayBuffer);
+                audioBufferRef.current = audioBuffer; // Cache for future use
+            }
 
-            const { end } = globalSoundUtils.playSample(
+            // Play the sample and get references to nodes
+            const { end, gainNode, sourceNode } = globalSoundUtils.playSample(
                 newAudioContext,
                 audioBuffer,
-                pitchRaw
+                pitchRaw,
+                volumeRaw
             );
 
-            setCurrentEnd(() => end);
+            // Store references for real-time control
+            gainNodeRef.current = gainNode;
+            sourceNodeRef.current = sourceNode;
+            endFunctionRef.current = end;
 
-            // Wait for sound to finish or be stopped
-            const duration = (audioBuffer.duration / (pitchRaw / 50)) * 1000;
+            // Calculate duration based on pitch
+            const duration = (audioBuffer.duration / (globalSoundUtils.mapSliderVal(pitchRaw))) * 1000;
+
+            // Auto-stop when sound finishes
             setTimeout(() => {
-                setIsPlaying(false);
-                setIsPaused(false);
-                setCurrentEnd(null);
+                // Only reset if this is still the current sound
+                if (sourceNodeRef.current === sourceNode) {
+                    setIsPlaying(false);
+                    setIsPaused(false);
+                    gainNodeRef.current = null;
+                    sourceNodeRef.current = null;
+                    endFunctionRef.current = null;
 
-                // Only close if still open
-                if (newAudioContext.state !== 'closed') {
-                    newAudioContext.close().catch(err => {
-                        console.warn('Error closing audio context:', err);
-                    });
+                    if (newAudioContext.state !== 'closed') {
+                        newAudioContext.close().catch(err => {
+                            console.warn('Error closing audio context:', err);
+                        });
+                    }
+                    audioContextRef.current = null;
                 }
-                setAudioContext(null);
             }, duration);
 
         } catch (error) {
             console.error('Error playing sound:', error);
             setIsPlaying(false);
             setIsPaused(false);
-            setCurrentEnd(null);
-            setAudioContext(null);
+            gainNodeRef.current = null;
+            sourceNodeRef.current = null;
+            endFunctionRef.current = null;
+            audioContextRef.current = null;
         }
     };
 
     const pauseSound = async () => {
-        if (audioContext && isPlaying && !isPaused && audioContext.state === 'running') {
-            await audioContext.suspend();
+        if (audioContextRef.current && isPlaying && !isPaused && audioContextRef.current.state === 'running') {
+            await audioContextRef.current.suspend();
             setIsPaused(true);
         }
     };
 
     const stopSound = () => {
-        if (currentEnd) {
-            currentEnd();
-            setCurrentEnd(null);
+        if (endFunctionRef.current) {
+            endFunctionRef.current();
+            endFunctionRef.current = null;
         }
 
-        if (audioContext && audioContext.state !== 'closed') {
-            audioContext.close().catch(err => {
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close().catch(err => {
                 console.warn('Error closing audio context:', err);
             });
-            setAudioContext(null);
+            audioContextRef.current = null;
         }
 
+        gainNodeRef.current = null;
+        sourceNodeRef.current = null;
         setIsPlaying(false);
         setIsPaused(false);
     };
@@ -251,7 +301,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                                 min="0"
                                 max="100"
                                 value={volumeRaw}
-                                onChange={(e) => setVolumeRaw(Math.max(Number(e.target.value), 1))}
+                                onChange={(e) => setVolumeRaw(Math.max(Number(e.target.value), 0))}
                                 className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
                                 style={{
                                     // @ts-ignore
