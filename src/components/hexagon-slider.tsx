@@ -15,6 +15,7 @@ interface HexagonSliderProps {
 
 const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: HexagonSliderProps) => {
     const [pitchRaw, setPitchRaw] = useState(50);
+    const [volumeRaw, setVolumeRaw] = useState(50);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [currentEnd, setCurrentEnd] = useState<(() => void) | null>(null);
@@ -163,7 +164,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                     </button>
                 </div>
 
-                <div className="relative w-48 h-[420px]">
+                <div className="relative w-72 h-[420px]">
                     <button
                         className={cn(
                             "absolute inset-0 top-6 flex items-center justify-center focus:outline-none transition-all",
@@ -173,7 +174,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                         aria-label={isPlaying && !isPaused ? "Pause sound" : "Play sound"}
                     >
                         <svg
-                            viewBox="0 0 200 400"
+                            viewBox="0 0 300 400"
                             className="w-full h-full"
                             style={{ filter: 'drop-shadow(0 4px 12px rgba(30, 58, 95, 0.2))' }}
                         >
@@ -185,7 +186,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                             </defs>
 
                             <polygon
-                                points="100,15 175,60 175,340 100,385 25,340 25,60"
+                                points="150,15 260,60 260,340 150,385 40,340 40,60"
                                 fill="url(#hexGradient)"
                                 stroke="#d4af37"
                                 strokeWidth="3"
@@ -196,7 +197,7 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                             />
 
                             <polygon
-                                points="100,25 155,55 155,115 100,145 45,115 45,55"
+                                points="150,25 215,55 215,115 150,145 85,115 85,55"
                                 fill="#4a7ba7"
                                 opacity="0.8"
                             />
@@ -218,13 +219,79 @@ const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: H
                         </div>
                     </div>
 
-                    <div className="absolute left-1/2 -translate-x-1/2 top-[175px] pointer-events-none">
+                    {/* Volume Slider (Left) */}
+                    <div className="absolute left-[105px] -translate-x-1/2 top-[175px] pointer-events-none">
+                        <span className="text-gloss-gold font-semibold text-xs tracking-wide">
+                            VOLUME
+                        </span>
+                    </div>
+
+                    <div className="absolute left-[105px] -translate-x-1/2 top-[195px] h-44">
+                        <div className="relative w-8 h-full">
+                            <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
+
+                            <div
+                                className="absolute left-1/2 -translate-x-1/2 w-1 bg-gloss-gold bg-opacity-80 rounded-full transition-all duration-200 bottom-0"
+                                style={{ height: `${volumeRaw}%` }}
+                            ></div>
+
+                            <div className="absolute left-1/2 -translate-x-1/2 w-full h-full flex flex-col justify-between py-1 pointer-events-none">
+                                {[...Array(10)].map((_, i) => (
+                                    <div key={i} className="flex justify-center">
+                                        <div className={cn(
+                                            "w-3 h-0.5 bg-gloss-offwhite opacity-50",
+                                            i === 5 ? 'w-5' : ''
+                                        )}></div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={volumeRaw}
+                                onChange={(e) => setVolumeRaw(Math.max(Number(e.target.value), 1))}
+                                className="absolute left-1/2 -translate-x-1/2 w-full h-full opacity-0 cursor-pointer z-10"
+                                style={{
+                                    // @ts-ignore
+                                    writingMode: 'bt-lr',
+                                    WebkitAppearance: 'slider-vertical',
+                                    // @ts-ignore
+                                    appearance: 'slider-vertical'
+                                }}
+                                aria-label="Volume slider"
+                            />
+
+                            <div
+                                className="absolute left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-200"
+                                style={{
+                                    bottom: `calc(${volumeRaw}% - 16px)`,
+                                }}
+                            >
+                                <div className="relative">
+                                    <div className="w-10 h-2 bg-gradient-to-b from-gloss-gold to-yellow-600 rounded-t"></div>
+
+                                    <div className="w-10 h-8 bg-gradient-to-b from-gray-200 to-gray-300 shadow-lg border-x-2 border-gloss-navy flex flex-col items-center justify-center gap-1 py-1">
+                                        <div className="w-6 h-0.5 bg-gloss-navy rounded-full"></div>
+                                        <div className="w-6 h-0.5 bg-gloss-navy rounded-full"></div>
+                                        <div className="w-6 h-0.5 bg-gloss-navy rounded-full"></div>
+                                    </div>
+
+                                    <div className="w-10 h-1 bg-gradient-to-b from-gray-400 to-gray-500 rounded-b"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Pitch Slider (Right) */}
+                    <div className="absolute left-[195px] -translate-x-1/2 top-[175px] pointer-events-none">
                         <span className="text-gloss-gold font-semibold text-xs tracking-wide">
                             PITCH
                         </span>
                     </div>
 
-                    <div className="absolute left-1/2 -translate-x-1/2 top-[195px] h-44">
+                    <div className="absolute left-[195px] -translate-x-1/2 top-[195px] h-44">
                         <div className="relative w-8 h-full">
                             <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gloss-offwhite bg-opacity-30 rounded-full"></div>
 
