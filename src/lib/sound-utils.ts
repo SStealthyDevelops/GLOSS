@@ -22,13 +22,12 @@ export class SoundUtils {
     }
 
     /**
-     * Map volume slider value (0-100) to gain value (0-1)
-     * Using a logarithmic curve for more natural volume perception
+     * Map volume slider value (0-100) to gain value (0-2)
+     * 0 = silent, 50 = 1x (100%), 100 = 2x (200%)
      */
     public mapVolumeSliderVal = (val: number): number => {
-        // Convert 0-100 to 0-1, using exponential curve for better perception
-        const normalized = val / 100;
-        return Math.pow(normalized, 2); // Quadratic curve feels more natural
+        // Map 0-100 to 0-2 linearly
+        return (val / 100) * 2;
     }
 
     /**
@@ -37,14 +36,14 @@ export class SoundUtils {
      * @param audioContext - The Web Audio API context
      * @param audioBuffer - The decoded audio buffer
      * @param rawPitchRate - Raw pitch value from 0-100 (50 = normal pitch)
-     * @param rawVolumeRate - Raw volume value from 0-100 (100 = full volume)
+     * @param rawVolumeRate - Raw volume value from 0-100 (0 = silent, 50 = 100%, 100 = 200%)
      * @returns Object with end function, gainNode, and sourceNode for real-time control
      */
     public playSample(
         audioContext: AudioContext,
         audioBuffer: AudioBuffer,
         rawPitchRate: number,
-        rawVolumeRate: number = 100
+        rawVolumeRate: number = 50
     ) {
         const rate = Math.max(0.80, this.mapSliderVal(rawPitchRate));
         const individualVolume = this.mapVolumeSliderVal(rawVolumeRate);
@@ -90,7 +89,7 @@ export class SoundUtils {
     /**
      * Update the volume of a playing sound in real-time
      * @param gainNode - The gain node to update
-     * @param rawVolumeRate - Raw volume value from 0-100
+     * @param rawVolumeRate - Raw volume value from 0-100 (0 = silent, 50 = 100%, 100 = 200%)
      */
     public updateVolume(gainNode: GainNode, rawVolumeRate: number) {
         const individualVolume = this.mapVolumeSliderVal(rawVolumeRate);
@@ -121,7 +120,7 @@ export class SoundUtils {
      * Update master volume and apply to all active sounds
      * @param volume - Volume level from 0 to 1
      * @param activeGainNodes - Array of currently active gain nodes to update
-     * @param currentIndividualVolumes - Array of individual volume values (0-100) corresponding to each gain node
+     * @param currentIndividualVolumes - Array of individual volume values (0-100, where 50 = 100%) corresponding to each gain node
      */
     public updateMasterVolume(
         volume: number,
@@ -133,7 +132,7 @@ export class SoundUtils {
         // Update all active gain nodes with new master volume
         activeGainNodes.forEach((gainNode, index) => {
             const individualVolume = this.mapVolumeSliderVal(
-                currentIndividualVolumes[index] || 100
+                currentIndividualVolumes[index] || 50
             );
             gainNode.gain.setTargetAtTime(
                 this.masterVolume * individualVolume,

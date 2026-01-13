@@ -15,7 +15,7 @@ interface HexagonSliderProps {
 
 const HexagonSlider = ({ soundLocation, imageLocation, masterVolume = 1, id }: HexagonSliderProps) => {
     const [pitchRaw, setPitchRaw] = useState(50);
-    const [volumeRaw, setVolumeRaw] = useState(100);
+    const [volumeRaw, setVolumeRaw] = useState(50); // 50 = 100% (1x gain)
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
